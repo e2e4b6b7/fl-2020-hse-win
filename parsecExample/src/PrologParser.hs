@@ -1,9 +1,7 @@
 module PrologParser where
 
-import           Control.Monad
-import           Data.Char                              (isLower, isUpper)
+import           Control.Monad                          ()
 import           Data.Either                            (fromLeft)
-import           Data.Maybe                             (fromMaybe)
 import           PrologAst                              (Atom (Atom),
                                                          Identifier,
                                                          PrologProgram (Program),
@@ -11,10 +9,15 @@ import           PrologAst                              (Atom (Atom),
                                                          RelationBody (..),
                                                          Type (..),
                                                          TypeDef (..), Var)
-import           System.IO
-import           Text.ParserCombinators.Parsec
-import           Text.ParserCombinators.Parsec.Expr
-import           Text.ParserCombinators.Parsec.Language
+import           System.IO                              ()
+import           Text.ParserCombinators.Parsec          (ParseError, Parser,
+                                                         alphaNum, char, eof,
+                                                         lower, many,
+                                                         optionMaybe, parse,
+                                                         sepBy, sepBy1, spaces,
+                                                         upper, (<|>))
+import           Text.ParserCombinators.Parsec.Expr     ()
+import           Text.ParserCombinators.Parsec.Language (emptyDef)
 import qualified Text.ParserCombinators.Parsec.Token    as Token
 
 languageDef =
@@ -70,14 +73,12 @@ maybeRelationBody = optionMaybe (reservedOp ":-" >> disjunction)
   where
     disjunction :: Parser RelationBody
     disjunction = do
-      x <- conjunction
-      xs <- many (reservedOp ";" >> conjunction)
-      return $ foldr1 Disj (x : xs)
+      x <- sepBy1 conjunction (reservedOp ";")
+      return $ foldr1 Disj x
     conjunction :: Parser RelationBody
     conjunction = do
-      x <- factor
-      xs <- many (reservedOp "," >> factor)
-      return $ foldr1 Conj (x : xs)
+      x <- sepBy1 factor (reservedOp ",")
+      return $ foldr1 Conj x
     factor :: Parser RelationBody
     factor = brackets disjunction <|> fmap RAtom atom
 
@@ -100,9 +101,8 @@ typeExpr = typeList
   where
     typeList :: Parser Type
     typeList = do
-      x <- factor
-      xs <- many (reservedOp "->" >> factor)
-      return $ foldr1 Arrow (x : xs)
+      x <- sepBy1 factor (reservedOp "->")
+      return $ foldr1 Arrow x
     factor :: Parser Type
     factor = fmap Var var <|> fmap TAtom atom <|> brackets typeList
 
@@ -115,21 +115,20 @@ typ = do
   return $ TypeDef id ty
 
 list :: Parser Atom
-list = squares usquaredList
+list = squares unsquaredList
   where
-    usquaredList :: Parser Atom
-    usquaredList = do
-      x <- optionMaybe factor
+    unsquaredList :: Parser Atom
+    unsquaredList = do
+      x <- sepBy factor (reservedOp ",")
       case x of
-        Just y  -> notEmptyList y
-        Nothing -> return $ Atom "nil" []
-    notEmptyList :: Either Atom Var -> Parser Atom
+        [] -> return $ Atom "nil" []
+        x  -> notEmptyList x
+    notEmptyList :: [Either Atom Var] -> Parser Atom
     notEmptyList x = do
-      xs <- many (reservedOp "," >> factor)
       ender <- optionMaybe (reservedOp "|" >> var)
       case ender of
-        Just end -> build (x : xs) (Right end)
-        Nothing  -> build (x : xs) nil
+        Just end -> build x (Right end)
+        Nothing  -> build x nil
     factor :: Parser (Either Atom Var)
     factor = fmap Left list <|> fmap Right var <|> fmap Left atom
     build :: [Either Atom Var] -> Either Atom Var -> Parser Atom

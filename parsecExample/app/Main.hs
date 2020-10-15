@@ -1,7 +1,8 @@
 module Main where
 
-import           PrologParser (parseText)
-import           System.IO
+import           PrologParser       (parseText)
+import           System.Environment (getArgs)
+import           System.IO          ()
 
 parseFromFile :: FilePath -> IO ()
 parseFromFile path = do
@@ -11,4 +12,6 @@ parseFromFile path = do
     Right r  -> writeFile (path ++ ".out") (show r)
 
 main :: IO ()
-main = parseFromFile "input.txt"
+main = do
+  args <- getArgs
+  parseFromFile $ head args
