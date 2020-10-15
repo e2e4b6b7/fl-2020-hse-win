@@ -1,7 +1,10 @@
 module PrologAst where
 
-data Token = TIdent String
-           | TVar String
+type Var = String
+type Identifier = String
+
+data Token = TIdent Identifier
+           | TVar Var
            | Comma
            | Semi
            | Lbr
@@ -11,21 +14,21 @@ data Token = TIdent String
            deriving (Eq, Show)
 
 data PrologProgram = Program {
-        pModule :: Maybe String
+        pModule :: Maybe Identifier
       , types   :: [TypeDef]
       , rels    :: [Relation]
       }
       deriving (Eq, Show)
 
-data TypeDef = TypeDef String Type
+data TypeDef = TypeDef Identifier Type
              deriving (Eq, Show)
 
-data Type = Var String
+data Type = Var Var
           | TAtom Atom
           | Arrow Type Type
           deriving (Eq, Show)
 
-data Atom = Atom { atomHead :: String, atomArgs :: [Either Atom String] }
+data Atom = Atom { atomHead :: Identifier, atomArgs :: [Either Atom Var] }
           deriving (Eq, Show)
 
 data Relation = Relation { relHead :: Atom, relBody :: Maybe RelationBody }

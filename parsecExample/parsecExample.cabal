@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 6282c62dace0b879c08651b2ab227b7c8bf5fa3a47856a371849c012c9c506e0
+-- hash: 096efa5dc6f2ea0081a90d93408e64423dba5fe54701bc68d8adc0395b08f71d
 
 name:           parsecExample
 version:        0.1.0.0
@@ -28,6 +28,8 @@ source-repository head
 library
   exposed-modules:
       Parser
+      PrologAst
+      PrologParser
   other-modules:
       Paths_parsecExample
   hs-source-dirs:
@@ -67,6 +69,7 @@ test-suite parsecExample-test
   main-is: Test.hs
   other-modules:
       Test.Parser
+      Test.PrologParser
       Paths_parsecExample
   hs-source-dirs:
       test

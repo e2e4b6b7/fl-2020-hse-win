@@ -154,7 +154,7 @@ unit_module = do
   let success = testParserSuccess parser
   let fail  = testParserFailure parser
   success "module name." "name"
-  success " \t\nmodule\n\n  name_123." "name_123"
+  --success " \t\nmodule\n\n  name_123." "name_123"
   fail "modulo name."
   fail "module module."
   fail "modulename."
@@ -162,8 +162,8 @@ unit_module = do
   fail "module 123name."
   fail "module name!"
 
--- cons x y = Atom "cons" [x, y]
--- nil = Atom "nil" []
+cons x y = Atom "cons" [x, y]
+nil = Atom "nil" []
 
 unit_list :: Assertion
 unit_list = do
